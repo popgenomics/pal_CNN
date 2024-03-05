@@ -1,4 +1,5 @@
 library(tidyverse)
+library(ggplot2)
 
 setwd("//wsl.localhost/Ubuntu/home/arthur_boddaert/pal_CNN/results")
 
@@ -44,7 +45,7 @@ for(i in c(1:3)){
   #for(time in events$time){
   #	plot_1 = plot_1 + geom_vline(xintercept=time)
   #}
-  ggsave(sprintf('S%i_count.png',i), width = 20, height = 20, units = "cm")
+  ggsave(sprintf('S%i_count.png',i), width = 20, height = 20, units = "cm", bg='white')
   
   # demes
   infile = sprintf('simulated_fossils_S%s.txt',i)
@@ -63,7 +64,7 @@ for(i in c(1:3)){
       scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_id_by_deme) + theme_void()
     
     file_name = sprintf('S%s_D%s.png',i, deme)
-    ggsave(file_name, width = 20, height = 20, units = "cm")
+    ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
   }
   
   # mean number of species within demes 
@@ -101,28 +102,28 @@ for(i in c(1:3)){
     scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_mean_sp_by_deme) + theme_void()
   
   file_name = sprintf('S%s_mspd.png',i)
-  ggsave(file_name, width = 20, height = 20, units = "cm")
+  ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
   
   plot_vspd = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=var_nb_species, 
                                                   xend=age_Ma, yend=max_var_sp_by_deme)) + geom_line()  +
     scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_var_sp_by_deme) + theme_void()
   
   file_name = sprintf('S%s_vspd.png',i)
-  ggsave(file_name, width = 20, height = 20, units = "cm")
+  ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
   
   plot_mgd = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=mean_nb_genus, 
                                                  xend=age_Ma, yend=mean_nb_genus)) + geom_line()  +
     scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_mean_genera_by_deme) + theme_void()
   
   file_name = sprintf('S%s_mgd.png',i)
-  ggsave(file_name, width = 20, height = 20, units = "cm")
+  ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
   
   plot_vgd = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=var_nb_genus, 
                                                  xend=age_Ma, yend=var_nb_genus)) + geom_line()  +
     scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_var_genera_by_deme) + theme_void()
   
   file_name = sprintf('S%s_vgd.png',i)
-  ggsave(file_name, width = 20, height = 20, units = "cm")
+  ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
   
   # mean number of species within genus 
   infile = sprintf('simulated_fossils_S%s.txt',i)
@@ -149,14 +150,14 @@ for(i in c(1:3)){
     scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_mean_sp_by_genera) + theme_void()
   
   file_name = sprintf('S%s_msp.png',i)
-  ggsave(file_name, width = 20, height = 20, units = "cm")
+  ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
   
   plot_vsp = evol_species_by_genus %>% ggplot(aes(x=age_Ma, y=var_nb_species, 
                                                  xend=age_Ma, yend=var_nb_species)) + geom_line()  +
     scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_var_sp_by_genera) + theme_void()
   
   file_name = sprintf('S%s_vsp.png',i)
-  ggsave(file_name, width = 20, height = 20, units = "cm")
+  ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
   
   # number of genera over time
   infile = sprintf('simulated_fossils_S%s.txt',i)
@@ -178,5 +179,5 @@ for(i in c(1:3)){
     scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_genera) + theme_void()
   
   file_name = sprintf('S%s_ng.png',i)
-  ggsave(file_name, width = 20, height = 20, units = "cm")
+  ggsave(file_name, width = 20, height = 20, units = "cm", bg='white')
 }

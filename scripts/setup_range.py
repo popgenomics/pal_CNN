@@ -1,6 +1,5 @@
 import pandas as pd
 from numpy import var, mean
-#from statistics import mean, pvariance, stdev, variance, pstdev
 
 def setup_range(path, nb_simulations, fileout):
     time_max = None
