@@ -1,8 +1,8 @@
 library(tidyverse)
 
-setwd("//wsl.localhost/Ubuntu/home/arthur_boddaert/pal_CNN/results_2")
+setwd("//wsl.localhost/Ubuntu/home/arthur_boddaert/pal_CNN/results")
 
-infile = 'range_graph.range'
+infile = 'range_graph.txt'
 parameters = read.table(infile, h=T, sep = '\t')
 max_time = parameters['time_max'][1,1]
 max_id = parameters['nb_id_max'][1,1]
@@ -38,10 +38,8 @@ for(i in c(1:3)){
   pbdb = pbdb %>% dplyr::mutate(y=1:nrow(pbdb))
   #x %>% ggplot(aes(x=max_ma, y=y, xend=min_ma, yend=y, label=accepted_name)) + geom_segment(size=3) + geom_text(hjust='outside', nudge_x = -60) +
   
-  plot_count = pbdb %>% ggplot(aes(x=max_ma, y=y, xend=min_ma, yend=y)) + geom_segment(size=3)  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Species ID') + labs(title = sprintf('s%s_count',i)) +
-    xlim(0, max_time) + ylim(0, max_id)
+  plot_count = pbdb %>% ggplot(aes(x=max_ma, y=y, xend=min_ma, yend=y)) + geom_segment(size=3) + 
+    xlim(0, max_time) + ylim(0, max_id) + theme_void()
   
   #for(time in events$time){
   #	plot_1 = plot_1 + geom_vline(xintercept=time)
@@ -53,18 +51,16 @@ for(i in c(1:3)){
   pbdb = read.table(infile, h=T)
   pbdb = as_tibble(pbdb)
   pbdb = pbdb %>% dplyr::mutate(genus=as.factor(genus), species=as.factor(species), L=max_ma-min_ma)
-  pbdb = pbdb %>% group_by(genus, species) %>% summarise(simulation, geography ,max_ma=max(max_ma), min_ma=min(min_ma)) %>% ungroup()
-  pbdb = pbdb %>% dplyr::mutate(median = (max_ma+min_ma)/2)
-  pbdb = pbdb %>% dplyr::arrange(median)
   demes = pbdb %>% select('geography') %>% distinct()
   demes = demes %>% dplyr::arrange(geography)
   for(deme in demes$geography){
     pbdb_deme = pbdb %>% filter(geography == deme)
-    pbdb_deme = pbdb_deme %>% dplyr::mutate(y=1:nrow(pbdb_deme))
+    pbdb_deme = pbdb_deme %>% group_by(genus, species) %>% summarise(simulation, geography ,max_ma=max(max_ma), min_ma=min(min_ma)) %>% ungroup()
+    pbdb_deme = pbdb_deme %>% dplyr::mutate(median = (max_ma+min_ma)/2)
+    pbdb_deme = pbdb_deme %>% dplyr::arrange(median) %>% distinct()
+    pbdb_deme = pbdb_deme %>% dplyr::mutate(y=row_number())
     plot_deme = pbdb_deme %>% ggplot(aes(x=max_ma, y=y, xend=min_ma, yend=y)) + geom_segment(size=3)  +
-      scale_color_viridis_d() +
-      xlab("Time (Ma)") + ylab('Species ID') + labs(title = sprintf('S%s_D%s',i, deme)) +
-      xlim(0, max_time) + ylim(0, max_id_by_deme)
+      scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_id_by_deme) + theme_void()
     
     file_name = sprintf('S%s_D%s.png',i, deme)
     ggsave(file_name, width = 20, height = 20, units = "cm")
@@ -102,36 +98,28 @@ for(i in c(1:3)){
   
   plot_mspd = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=mean_nb_species, 
                                                   xend=age_Ma, yend=mean_nb_species)) + geom_line()  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Mean number of species within demes') + labs(title = sprintf('S%s_mspd',i)) +
-    xlim(0, max_time) + ylim(0, max_mean_sp_by_deme)
+    scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_mean_sp_by_deme) + theme_void()
   
   file_name = sprintf('S%s_mspd.png',i)
   ggsave(file_name, width = 20, height = 20, units = "cm")
   
   plot_vspd = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=var_nb_species, 
                                                   xend=age_Ma, yend=max_var_sp_by_deme)) + geom_line()  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Variance of species within demes') + labs(title = sprintf('S%s_vspd',i)) +
-    xlim(0, max_time) + ylim(0, max_var_sp_by_deme)
+    scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_var_sp_by_deme) + theme_void()
   
   file_name = sprintf('S%s_vspd.png',i)
   ggsave(file_name, width = 20, height = 20, units = "cm")
   
   plot_mgd = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=mean_nb_genus, 
                                                  xend=age_Ma, yend=mean_nb_genus)) + geom_line()  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Mean number of genus within demes') + labs(title = sprintf('S%s_mgd',i)) +
-    xlim(0, max_time) + ylim(0, max_mean_genera_by_deme)
+    scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_mean_genera_by_deme) + theme_void()
   
   file_name = sprintf('S%s_mgd.png',i)
   ggsave(file_name, width = 20, height = 20, units = "cm")
   
   plot_vgd = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=var_nb_genus, 
                                                  xend=age_Ma, yend=var_nb_genus)) + geom_line()  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Variance of genus within demes') + labs(title = sprintf('S%s_vgd',i)) +
-    xlim(0, max_time) + ylim(0, max_var_genera_by_deme)
+    scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_var_genera_by_deme) + theme_void()
   
   file_name = sprintf('S%s_vgd.png',i)
   ggsave(file_name, width = 20, height = 20, units = "cm")
@@ -158,18 +146,14 @@ for(i in c(1:3)){
   evol_species_by_genus = data.frame(age_Ma, mean_nb_species, var_nb_species)
   plot_msp = evol_species_by_genus %>% ggplot(aes(x=age_Ma, y=mean_nb_species, 
                                                   xend=age_Ma, yend=mean_nb_species)) + geom_line()  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Mean number of species within genus') + labs(title = sprintf('S%s_msp',i)) +
-    xlim(0, max_time) + ylim(0, max_mean_sp_by_genera)
+    scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_mean_sp_by_genera) + theme_void()
   
   file_name = sprintf('S%s_msp.png',i)
   ggsave(file_name, width = 20, height = 20, units = "cm")
   
-  plot_vsp = evol_species_by_deme %>% ggplot(aes(x=age_Ma, y=var_nb_species, 
+  plot_vsp = evol_species_by_genus %>% ggplot(aes(x=age_Ma, y=var_nb_species, 
                                                  xend=age_Ma, yend=var_nb_species)) + geom_line()  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Mean number of species within genus') + labs(title = sprintf('S%s_vsp',i)) +
-    xlim(0, max_time) + ylim(0, max_var_sp_by_genera)
+    scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_var_sp_by_genera) + theme_void()
   
   file_name = sprintf('S%s_vsp.png',i)
   ggsave(file_name, width = 20, height = 20, units = "cm")
@@ -191,9 +175,7 @@ for(i in c(1:3)){
   evol_genus_by_time = data.frame(age_Ma, nb_genus)
   plot_ng = evol_genus_by_time %>% ggplot(aes(x=age_Ma, y=nb_genus, 
                                               xend=age_Ma, yend=nb_genus)) + geom_line()  +
-    scale_color_viridis_d() +
-    xlab("Time (Ma)") + ylab('Number of genus') + labs(title = sprintf('S%s_ng',i)) +
-    xlim(0, max_time) + ylim(0, max_genera)
+    scale_color_viridis_d() + xlim(0, max_time) + ylim(0, max_genera) + theme_void()
   
   file_name = sprintf('S%s_ng.png',i)
   ggsave(file_name, width = 20, height = 20, units = "cm")

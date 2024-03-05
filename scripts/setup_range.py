@@ -1,11 +1,8 @@
 import pandas as pd
-from numpy import var
-from statistics import mean, pvariance, stdev, variance, pstdev
+from numpy import var, mean
+#from statistics import mean, pvariance, stdev, variance, pstdev
 
 def setup_range(path, nb_simulations, fileout):
-    i_mean_max = 0
-    i_var_max = 0
-
     time_max = None
     nb_id_max = 0
     nb_id_max_deme = 0
@@ -56,23 +53,19 @@ def setup_range(path, nb_simulations, fileout):
                 var_genus_max_deme = var(nb_genera_deme, ddof=1)
             
             nb_sp_genus = []
-            array_at_time_simple = array_at_time.drop(['simulation', 'geography', 'specimen', 'extinction_statu'], axis=1)
+            array_at_time_simple = array_at_time.drop(['simulation', 'geography', 'specimen', 'extinction_statu', 'max_ma', 'min_ma'], axis=1)
             # max mean and variance number of species within genera over time
             for j in array_at_time_simple['genus'].unique():
                 array_genus_time = array_at_time_simple[array_at_time_simple['genus']==j]
                 nb_sp_genus.append(array_genus_time['species'].nunique())
             if mean_sp_max_genera <= mean(nb_sp_genus):
                 mean_sp_max_genera = mean(nb_sp_genus)
-                i_mean_max = time
             if len(nb_sp_genus) > 1 and var_sp_max_genera <= var(nb_sp_genus, ddof=1):
                 var_sp_max_genera = var(nb_sp_genus, ddof=1)
-                i_var_max = time
     
-    print(i_mean_max, i_var_max)
-    print(mean_sp_max_genera, var_sp_max_genera)
     with open(fileout, 'w') as fileOut:
         fileOut.write('time_max\tnb_id_max\tnb_id_max_deme\tmean_sp_max_genera\tvar_sp_max_genera\tmean_sp_max_deme\tvar_sp_max_deme\tmean_genus_max_deme\tvar_genus_max_deme\tnb_genus_max\n')
         fileOut.write(f'{time_max}\t{nb_id_max}\t{nb_id_max_deme}\t{mean_sp_max_genera}\t{var_sp_max_genera}\t{mean_sp_max_deme}\t{var_sp_max_deme}\t{mean_genus_max_deme}\t{var_genus_max_deme}\t{nb_genus_max}\n')
 
-setup_range('/home/arthur_boddaert/pal_CNN/results', 3, '/home/arthur_boddaert/pal_CNN/results/range_graph.range')
+setup_range('/home/arthur_boddaert/pal_CNN/results', 3, '/home/arthur_boddaert/pal_CNN/results/range_graph.txt')
 
