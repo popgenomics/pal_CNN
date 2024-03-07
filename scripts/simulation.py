@@ -47,7 +47,7 @@ def get_geography(genus, lineage, nLocalities):
 
 # C1
 
-def simulation(rate, proportion, simulation_name, result_repertory, nb_localities=10, nb_generations = 600, nb_max_genus = 2000, nb_max_lineages_in_genus = 50):
+def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_localities=10, nb_generations = 600, nb_max_genus = 2000, nb_max_lineages_in_genus = 50):
 	#### parameters used for trials
 	nLocalities = nb_localities # number of geographic localities where species from different genus can be found
 	nGenerations = nb_generations  # number of generations to simulate
@@ -60,7 +60,7 @@ def simulation(rate, proportion, simulation_name, result_repertory, nb_localitie
 	pE2, pE3 = proportion
 
 	with open(f'{result_repertory}/{simulation_name}.par', 'w') as fileIn:
-		fileIn.write(f'{simulation_name}\t{E1}\t{E2}\t{E3}\t{pE2}\t{pE3}\t{C1}\t{nLocalities}\t{nGenerations}\t{maxNGenus}\t{nMaxLineages_in_genus}\n')
+		fileIn.write(f'{simulation_name}\t{E1}\t{E2}\t{E3}\t{pE2}\t{pE3}\t{D1}\t{D2}\t{C1}\t{nLocalities}\t{nGenerations}\t{maxNGenus}\t{nMaxLineages_in_genus}\n')
 
 	living_genus = [] # list of genus which 1) were born and 2) not dead yet
 
@@ -119,7 +119,8 @@ def simulation(rate, proportion, simulation_name, result_repertory, nb_localitie
 		# 	pE2 = 0.1 # proportion of demes mass extincted by an E2 event
 		# 	E3 = 0 # probability for a geography to experiment a mass extinction
 		# 	pE3 = 0.1 # proportion of demes within the locality for being mass extincted by an E3 event
-		print('Generation {0}: {1} extincted lineages'.format(time, nExtincted_lineages))
+		if verbose:
+			print('Generation {0}: {1} extincted lineages'.format(time, nExtincted_lineages))
 		# origination of a new genus
 		test_new_genus = binomial(n=1, p=D2, size=1)[0]
 		if test_new_genus:

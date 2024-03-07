@@ -2,7 +2,7 @@ import pandas as pd
 from numpy import var, mean
 
 def setup_range(path, nb_simulations, fileout):
-    time_max = None
+    time_max = 0
     nb_id_max = 0
     nb_id_max_deme = 0
     nb_genus_max = 0
@@ -13,11 +13,11 @@ def setup_range(path, nb_simulations, fileout):
     mean_sp_max_genera = 0
     var_sp_max_genera = 0
     
-    for i in range(1,nb_simulations+1):
+    for i in range(nb_simulations):
         file = f'{path}/simulated_fossils_S{i}.txt'
         array = pd.read_csv(file, sep='\t', header=0)
         # Count max number of id and max number of genera
-        if i == 1 :
+        if i == 0 :
             time_max = array['max_ma'].max(axis=0)
             nb_id_max = array.shape[0]
         else:
