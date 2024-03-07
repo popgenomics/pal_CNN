@@ -66,5 +66,3 @@ def setup_range(path, nb_simulations, fileout):
         fileOut.write('time_max\tnb_id_max\tnb_id_max_deme\tmean_sp_max_genera\tvar_sp_max_genera\tmean_sp_max_deme\tvar_sp_max_deme\tmean_genus_max_deme\tvar_genus_max_deme\tnb_genus_max\n')
         fileOut.write(f'{time_max}\t{nb_id_max}\t{nb_id_max_deme}\t{mean_sp_max_genera}\t{var_sp_max_genera}\t{mean_sp_max_deme}\t{var_sp_max_deme}\t{mean_genus_max_deme}\t{var_genus_max_deme}\t{nb_genus_max}\n')
 
-setup_range('/home/arthur_boddaert/pal_CNN/results', 3, '/home/arthur_boddaert/pal_CNN/results/range_graph.txt')
-

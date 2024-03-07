@@ -35,43 +35,33 @@ def get_geography(genus, lineage, nLocalities):
 		res = -1
 	return(res)
 
-#### parameters used for trials
-nLocalities = 10 # number of geographic localities where species from different genus can be found
-nGenerations = 600  # number of generations to simulate
+#simulation_name = 'S1'
+# E1 probability for a single lineage/deme to be extinct
+# E2 probability for a genus to experiment a mass extinction
+# pE2 proportion of demes mass extincted by an E2 event
+# E3 probability for a geography to experiment a mass extinction
+# pE3 proportion of demes within the locality for being mass extincted by an E3 event
 
-maxNGenus = 2000 # maximum number of genus
-nMaxLineages_in_genus = 50 # a given genus can have a maximum number of species/lineages
-nMaxDemes_in_genus = nLocalities*nMaxLineages_in_genus
+# D1
+# D2
 
-simulation_name = 'S1'
-E1 = 0.2 # probability for a single lineage/deme to be extinct
-E2 = 0.075 # probability for a genus to experiment a mass extinction
-pE2 = 0.75 # proportion of demes mass extincted by an E2 event
-E3 = 0.01 # probability for a geography to experiment a mass extinction
-pE3 = 0.5 # proportion of demes within the locality for being mass extincted by an E3 event
+# C1
 
-D1 = 0.15
-D2 = 0.1
+def simulation(rate, proportion, simulation_name, result_repertory, nb_localities=10, nb_generations = 600, nb_max_genus = 2000, nb_max_lineages_in_genus = 50):
+	#### parameters used for trials
+	nLocalities = nb_localities # number of geographic localities where species from different genus can be found
+	nGenerations = nb_generations  # number of generations to simulate
 
-C1 = 0.4
+	maxNGenus = nb_max_genus # maximum number of genus
+	nMaxLineages_in_genus = nb_max_lineages_in_genus # a given genus can have a maximum number of species/lineages
+	nMaxDemes_in_genus = nLocalities*nMaxLineages_in_genus
 
-# test
-simulation_name = 'S5'
-E1 = 0.1 # probability for a single lineage/deme to be extinct
-E2 = 0.1 # probability for a genus to experiment a mass extinction
-pE2 = 0.1 # proportion of demes mass extincted by an E2 event
-E3 = 0 # probability for a geography to experiment a mass extinction
-pE3 = 0.1 # proportion of demes within the locality for being mass extincted by an E3 event
-
-D1 = 0.01
-D2 = 0.1
-
-C1 = 0.75
-
-#
-def simulation(rate, proportion, simulation_name, result_repertory):
 	E1, E2, E3, D1, D2, C1 = rate
 	pE2, pE3 = proportion
+
+	with open(f'{result_repertory}/{simulation_name}.par', 'w') as fileIn:
+		fileIn.write(f'{simulation_name}\t{E1}\t{E2}\t{E3}\t{pE2}\t{pE3}\t{C1}\t{nLocalities}\t{nGenerations}\t{maxNGenus}\t{nMaxLineages_in_genus}\n')
+
 	living_genus = [] # list of genus which 1) were born and 2) not dead yet
 
 	record = {}
@@ -240,7 +230,6 @@ def simulation(rate, proportion, simulation_name, result_repertory):
 					if nDemes_to_extinct>n_non_extincted_demes:
 						nDemes_to_extinct=n_non_extincted_demes
 
-
 					if nDemes_to_extinct>0:
 						mass_extinctions_genus.append(genus)
 						mass_extinctions_deme.append(-1)
@@ -275,11 +264,10 @@ def simulation(rate, proportion, simulation_name, result_repertory):
 							record[genus]['youngest'][i] = nan
 							record[genus]['geography'][i] = nan
 							record[genus]['extinction_statu'][i] = nan
-
 		
 		test_extinction_deme = binomial(n=1, p=E3, size=1)
 		if test_extinction_deme:
-			localities_record = {}	
+			localities_record = {}
 			
 			# regroup lineages by localities
 			for genus in record.keys():
