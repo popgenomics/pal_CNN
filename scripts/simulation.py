@@ -23,6 +23,23 @@ from numpy import nansum
 from numpy import isnan
 
 def get_geography(genus, lineage, nLocalities):
+	"""
+	Return one geography not currently occupied by the lineage
+
+	Parameters
+	----------
+	genus : dict
+		The dict use in the simulation to represent the genus
+	lineage : str
+		Current lineage which we want estimate his new localities
+	nLocalities : int
+		Number of localities in the simulation
+
+	Returns
+	-------
+	int :
+		The localities selected, if all localities are occupied return -1
+	"""
 	currently_occuring = []
 	for i in range(len(genus['lineage'])):
 		if genus['lineage'][i]==lineage:
@@ -48,6 +65,35 @@ def get_geography(genus, lineage, nLocalities):
 # C1
 
 def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_localities=10, nb_generations = 600, nb_max_genus = 2000, nb_max_lineages_in_genus = 50):
+	"""
+	Launch a simulation of the evolution of diversity of life, using speciation and extinction.
+
+	Parameters
+	----------
+	rate : list
+		The list with the rate E1, E2, E3, D1, D2 and C1 (in this order).
+	proportion :
+		The list with the proportion of lineage to extinct with E2 (pE2) and E3 (pE3) (in this order).
+	simulation_name : str
+		The name of the simulation. Use to name the output file.
+	result_repertory : str
+		The path of the directory where the results will be store.
+	verbose : bool
+		Active the verbose mode if True.
+	nb_localities : int
+		Number of localities. 10 by default
+	nb_generations : int
+		Max number of generation in the simulation. 600 by default.
+	nb_max_genus : int
+		Max number of genus in the simulation. 2,000 by default.
+	nb_max_lineages_in_genus : int
+		Max number of lineage for each genus. 50 by default.
+
+	Returns
+	-------
+	None
+
+	"""
 	#### parameters used for trials
 	nLocalities = nb_localities # number of geographic localities where species from different genus can be found
 	nGenerations = nb_generations  # number of generations to simulate
@@ -59,8 +105,9 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 	E1, E2, E3, D1, D2, C1 = rate
 	pE2, pE3 = proportion
 
+	scenar = simulation_name.split('_')[0]
 	with open(f'{result_repertory}/{simulation_name}.par', 'w') as fileIn:
-		fileIn.write(f'{simulation_name}\t{E1}\t{E2}\t{E3}\t{pE2}\t{pE3}\t{D1}\t{D2}\t{C1}\t{nLocalities}\t{nGenerations}\t{maxNGenus}\t{nMaxLineages_in_genus}\n')
+		fileIn.write(f'{scenar}\t{simulation_name}\t{E1}\t{E2}\t{E3}\t{pE2}\t{pE3}\t{D1}\t{D2}\t{C1}\t{nLocalities}\t{nGenerations}\t{maxNGenus}\t{nMaxLineages_in_genus}\n')
 
 	living_genus = [] # list of genus which 1) were born and 2) not dead yet
 
