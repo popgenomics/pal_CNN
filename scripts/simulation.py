@@ -121,6 +121,9 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 		record[genus]['geography'] = [nan] * nMaxDemes_in_genus
 		record[genus]['extinction_statu'] = [nan] * nMaxDemes_in_genus
 
+	# setup the list which will contain the lineages in a deme at each time.
+	deme_species = [([nan]*nMaxDemes_in_genus) for i in range(nLocalities)]
+
 	living_genus.append(0)
 
 	record[0]['nLineages'] +=1
@@ -129,6 +132,8 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 	record[0]['youngest'][0] = nGenerations
 	record[0]['geography'][0] = 0
 	record[0]['extinction_statu'][0] = 0
+
+	deme_species[0][0] = (0, 0)
 
 	record_extincted = {}
 	record_extincted['genus'] = []
@@ -153,6 +158,7 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 	mass_extinctions_deme = []
 
 	last_created_genus = 0
+
 	for time in range(nGenerations)[::-1]:
 		# if time==250:
 		# 	E1 = 0.5 # probability for a single lineage/deme to be extinct
@@ -174,13 +180,7 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 			last_created_genus += 1
 			new_genus = last_created_genus
 			living_genus.append(new_genus)
-	#		record[new_genus] = {}
 			record[new_genus]['nLineages'] = 1
-	#		record[new_genus]['lineage'] = [nan] * nMaxDemes_in_genus
-	#		record[new_genus]['oldest'] = [nan] * nMaxDemes_in_genus
-	#		record[new_genus]['youngest'] = [nan] * nMaxDemes_in_genus
-	#		record[new_genus]['geography'] = [nan] * nMaxDemes_in_genus
-	#		record[new_genus]['extinction_statu'] = [nan] * nMaxDemes_in_genus
 			
 			record[new_genus]['lineage'][0] = 0
 			record[new_genus]['oldest'][0] = time
@@ -188,9 +188,11 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 			new_geography = randint(low=0, high=nLocalities, size=1)[0]
 			record[new_genus]['geography'][0] = new_geography
 			record[new_genus]['extinction_statu'][0] = 0
+			if deme_species[new_geography].count(nan) != 0:
+				index_in_deme = deme_species[new_geography].index(nan) # add the new genus to deme current species
+				deme_species[new_geography][index_in_deme] = (new_genus, 0)
 			
 		# loop over different genus for the origination of new lineage
-	#	for genus in record.keys():
 		for genus in living_genus:
 			# only treats genus that are not fully extincted
 			if record[genus]['lineage'].count(nan)!=len(record[genus]['lineage']):
@@ -212,6 +214,10 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 							record[genus]['geography'][newPos] = new_geography # the new lineage appears in a new geography
 							record[genus]['extinction_statu'][newPos] = 0
 
+							if deme_species[new_geography].count(nan) != 0:
+								index_in_deme = deme_species[new_geography].index(nan) # add the new genus to deme current species
+								deme_species[new_geography][index_in_deme] = (genus, newPos)
+
 				# colonization of a new geographic area
 				n_non_extincted_demes = len(record[genus]['extinction_statu']) - nansum(record[genus]['extinction_statu']) - record[genus]['extinction_statu'].count(nan)
 				n_colonizing_lineages = sum(binomial(n=1, p=C1, size=int(n_non_extincted_demes)))
@@ -229,6 +235,10 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 								record[genus]['youngest'][newPos] = time
 								record[genus]['geography'][newPos] = new_geography
 								record[genus]['extinction_statu'][newPos] = 0
+
+								if deme_species[new_geography].count(nan) != 0:
+									index_in_deme = deme_species[new_geography].index(nan)  # add the new genus to deme current species
+									deme_species[new_geography][index_in_deme] = (genus, newPos)
 				
 				# extinction of a given deme (lineage in a locality)
 				current_demes = [ i for i in range(len(record[genus]['lineage'])) if isnan(record[genus]['lineage'][i])==False ]
@@ -242,13 +252,6 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 					killed_deme = choice(a=current_demes, size=n_lineages_to_kill, replace=False) # a deme cannot be extincted more that one time
 					for death in killed_deme:
 							record[genus]['extinction_statu'][death] = 1
-					
-	#						record_extincted['genus'].append(genus)
-	#						record_extincted['lineage'].append( record[genus]['lineage'][death] )
-	#						record_extincted['geography'].append( record[genus]['geography'][death] )
-	#						record_extincted['youngest'].append( time )
-	#						record_extincted['oldest'].append( record[genus]['oldest'][death] )
-	#						record_extincted['extinction_statu'].append( record[genus]['extinction_statu'][death] )
 							
 							record_extincted['genus'][nExtincted_lineages] = genus
 							record_extincted['lineage'][nExtincted_lineages] = record[genus]['lineage'][death] 
@@ -257,7 +260,10 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 							record_extincted['oldest'][nExtincted_lineages] = record[genus]['oldest'][death] 
 							record_extincted['extinction_statu'][nExtincted_lineages] = record[genus]['extinction_statu'][death] 
 							nExtincted_lineages += 1
-							
+
+							index_in_deme = deme_species[record[genus]['geography'][death]].index((genus, death))  # delete the lineage to deme current species
+							deme_species[record[genus]['geography'][death]][index_in_deme] = nan
+
 							record[genus]['lineage'][death] = nan
 							record[genus]['oldest'][death] = nan 
 							record[genus]['youngest'][death] = nan 
@@ -272,7 +278,7 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 				n_non_extincted_demes = len(non_extincted_demes)
 				
 				# test extinction
-				test_extinction_genus = binomial(n=1, p=E2, size=1) ## test extinction at the start to limitate calcul
+				test_extinction_genus = binomial(n=1, p=E2, size=1)[0]
 				if test_extinction_genus:
 					nDemes_to_extinct = poisson(lam=pE2*n_non_extincted_demes, size=1)[0]
 					if nDemes_to_extinct>n_non_extincted_demes:
@@ -292,13 +298,6 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 							record[genus]['extinction_statu'][i] = 1
 							record[genus]['youngest'][i] = time
 
-		#					record_extincted['genus'].append(genus)
-		#					record_extincted['lineage'].append( record[genus]['lineage'][i] )
-		#					record_extincted['geography'].append( record[genus]['geography'][i] )
-		#					record_extincted['youngest'].append( record[genus]['youngest'][i] )
-		#					record_extincted['oldest'].append( record[genus]['oldest'][i] )
-		#					record_extincted['extinction_statu'].append( record[genus]['extinction_statu'][i] )
-
 							record_extincted['genus'][nExtincted_lineages] = genus
 							record_extincted['lineage'][nExtincted_lineages] = record[genus]['lineage'][i] 
 							record_extincted['geography'][nExtincted_lineages] = record[genus]['geography'][i] 
@@ -307,64 +306,61 @@ def simulation(rate, proportion, simulation_name, result_repertory, verbose, nb_
 							record_extincted['extinction_statu'][nExtincted_lineages] = record[genus]['extinction_statu'][i] 
 							nExtincted_lineages += 1
 
+							index_in_deme = deme_species[record[genus]['geography'][i]].index((genus, i))  # delete the lineage to deme current species
+							deme_species[record[genus]['geography'][i]][index_in_deme] = nan
+
 							record[genus]['lineage'][i] = nan
 							record[genus]['oldest'][i] = nan
 							record[genus]['youngest'][i] = nan
 							record[genus]['geography'][i] = nan
 							record[genus]['extinction_statu'][i] = nan
-		
-		test_extinction_deme = binomial(n=1, p=E3, size=1)
-		if test_extinction_deme:
-			localities_record = {}
-			
-			# regroup lineages by localities
-			for genus in record.keys():
-				for i in range(len(record[genus]['geography'])):
-					current_localities = record[genus]['geography'][i]
-					if isnan(current_localities) == False:
-						if current_localities not in localities_record.keys():
-							localities_record[current_localities] = {}
-							localities_record[current_localities]['lineage'] = [(genus, record[genus]['lineage'][i])] + ([None] * (maxNGenus*nMaxDemes_in_genus))
-							localities_record[current_localities]['index'] = [i] + ([None] * (maxNGenus*nMaxDemes_in_genus))
-						else:
-							new_index = localities_record[current_localities]['lineage'].index(None)
-							localities_record[current_localities]['lineage'][new_index] = (genus, record[genus]['lineage'][i])
-							localities_record[current_localities]['index'][new_index] = i
 
-			# define a deme where extinction will take place
-			if len(localities_record.keys()) != 0:
-				demes_to_extinct = choice(a=list(localities_record.keys()), size=1, replace=False)[0]
-				non_extincted_lineages = [ i for i in range(len(localities_record[demes_to_extinct]['lineage'])) if localities_record[demes_to_extinct]['lineage'][i] is not None ]
-				n_non_extincted_lineages = len(non_extincted_lineages)
-				nLineages_to_extinct = poisson(lam=pE3*n_non_extincted_lineages, size=1)[0]
-				if nLineages_to_extinct > n_non_extincted_lineages:
-					nLineages_to_extinct = n_non_extincted_lineages
-				if nLineages_to_extinct > 0:
-					mass_extinctions_genus.append(-1) # not adaptate to E3
-					mass_extinctions_deme.append(demes_to_extinct)
-					mass_extinctions_times.append(time)
-					mass_extinctions_kind.append('E3')
-					mass_extinctions_effect.append(nLineages_to_extinct)
-					# list of lineages to extinct
-					lineages_to_extinct = choice(a=non_extincted_lineages, size=nLineages_to_extinct, replace=False)
-					for i in lineages_to_extinct:
-						index = localities_record[demes_to_extinct]['index'][i]
-						genus = localities_record[demes_to_extinct]['lineage'][i][0]
-						record_extincted['genus'][nExtincted_lineages] = genus
-						record_extincted['lineage'][nExtincted_lineages] = localities_record[demes_to_extinct]['lineage'][i][1]
-						record_extincted['geography'][nExtincted_lineages] = demes_to_extinct
-						record_extincted['youngest'][nExtincted_lineages] = time
-						record_extincted['oldest'][nExtincted_lineages] = record[genus]['oldest'][index]
-						record_extincted['extinction_statu'][nExtincted_lineages] = 1
-						nExtincted_lineages += 1
+		# check the demes where an extinction can take place
+		not_empty_deme = []
+		for i in range(len(deme_species)):
+			if deme_species[i].count(nan) != len(deme_species[i]):
+				not_empty_deme.append(i)
 
-						record[genus]['lineage'][index] = nan
-						record[genus]['oldest'][index] = nan
-						record[genus]['youngest'][index] = nan
-						record[genus]['geography'][index] = nan
-						record[genus]['extinction_statu'][index] = nan
-						
-			
+		if len(not_empty_deme) != 0:
+			# loop over different deme for the extinction of a deme
+			for deme in not_empty_deme:
+				# test extinction
+				test_extinction_deme = binomial(n=1, p=E3, size=1)[0]
+				if test_extinction_deme:
+					# number of non extincted lineages
+					non_extincted_lineages = [i for i in range(len(deme_species[deme])) if deme_species[deme][i] is not nan]
+					n_non_extincted_lineages = len(non_extincted_lineages)
+					# number of extinctions
+					nLineages_to_extinct = poisson(lam=pE3 * n_non_extincted_lineages, size=1)[0]
+					if nLineages_to_extinct > n_non_extincted_lineages:
+						nLineages_to_extinct = n_non_extincted_lineages
+					if nLineages_to_extinct > 0:
+						# list of demes to extinct
+						mass_extinctions_genus.append(-1)  # not adaptate to E3
+						mass_extinctions_deme.append(deme)
+						mass_extinctions_times.append(time)
+						mass_extinctions_kind.append('E3')
+						mass_extinctions_effect.append(nLineages_to_extinct)
+						# list of lineages to extinct
+						lineages_to_extinct = choice(a=non_extincted_lineages, size=nLineages_to_extinct, replace=False)
+						for i in lineages_to_extinct:
+							posi = deme_species[deme][i][1]
+							genus = deme_species[deme][i][0]
+							record_extincted['genus'][nExtincted_lineages] = genus
+							record_extincted['lineage'][nExtincted_lineages] = record[genus]['lineage'][posi]
+							record_extincted['geography'][nExtincted_lineages] = deme
+							record_extincted['youngest'][nExtincted_lineages] = time
+							record_extincted['oldest'][nExtincted_lineages] = record[genus]['oldest'][posi]
+							record_extincted['extinction_statu'][nExtincted_lineages] = 1
+							nExtincted_lineages += 1
+
+							deme_species[deme][i] = nan
+
+							record[genus]['lineage'][posi] = nan
+							record[genus]['oldest'][posi] = nan
+							record[genus]['youngest'][posi] = nan
+							record[genus]['geography'][posi] = nan
+							record[genus]['extinction_statu'][posi] = nan
 
 	# output file
 	## fossils
