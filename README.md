@@ -1,5 +1,5 @@
 # pal_CNN
-# execution (for the moment)
+# execution
 
 ## Simulation part
 For the proof of concept use python3 but for the density dependent part you need to use pypy.
